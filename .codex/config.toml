@@ -1,0 +1,21 @@
+[features]
+multi_agent = true
+
+[agents]
+max_threads = 4
+
+[agents.spec_architect]
+description = "Arquiteto SDD: analisa requisitos e cria spec.md e tasks.md; não implementa código."
+config_file = "agents/spec-architect.toml"
+
+[agents.software_engineer]
+description = "Engenheiro: implementa especificações aprovadas, testes e correções."
+config_file = "agents/software-engineer.toml"
+
+[agents.code_reviewer]
+description = "Revisor independente: verifica aderência, qualidade, testes e riscos."
+config_file = "agents/code-reviewer.toml"
+
+[agents.mr_writer]
+description = "Redator de Merge Request: produz documentação fiel às mudanças após solicitar contexto ao usuário."
+config_file = "agents/mr-writer.toml"
