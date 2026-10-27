@@ -19,3 +19,7 @@ config_file = "agents/code-reviewer.toml"
 [agents.mr_writer]
 description = "Redator de Merge Request: produz documentação fiel às mudanças após solicitar contexto ao usuário."
 config_file = "agents/mr-writer.toml"
+
+[agents.commit_agent]
+description = "Creates scoped Conventional Commits in English on the current Git branch. Does not push or switch branches."
+config_file = "agents/commit-agent.toml"
