@@ -1,8 +1,12 @@
 # Tasks em ordem — microsserviço de Pedidos
 
-Estado: **itens 01 e 02 concluídos; modelo relacional parcialmente implementado**, em 27/10/2026. Evidências de execução estão no [estado do projeto](project-status.md) e nas tarefas de cada funcionalidade.
+Estado: **itens 01, 02, 03 e 04 concluídos**, em 28/10/2026. Evidências de execução estão no [estado do projeto](project-status.md) e nas tarefas de cada funcionalidade.
 
 Base: [diagrama do banco](diagrams/database.md), [arquitetura proposta](../architecture.md), [estado do projeto](project-status.md) e [processo SDD](../AGENTS.md). O código contém a base de persistência e o domínio de pedidos. O inventário antigo da arquitetura não representa essas implementações posteriores.
+
+O [fluxo da aplicação](application-flow.md) explica o caminho implementado até o item 04 e a continuação planejada com publicação, reserva e consulta.
+
+O [roadmap de integração](integration-roadmap.md) propõe a sequência entre infraestrutura Kafka, próximas etapas de Pedidos e desenvolvimento dos serviços de Estoque e Produtos.
 
 Este documento organiza a ordem de trabalho e as dependências. Cada item terá seu próprio ciclo SDD e seus próprios `spec.md` e `tasks.md` em `specs/<funcionalidade-kebab-case>/`, quando iniciado. Os nomes de pasta abaixo são sugestões. As entregas e validações são propostas para a futura especificação.
 
@@ -30,8 +34,8 @@ Executar na ordem abaixo e aguardar a conclusão das dependências. Uma aprovaç
 | --- | --- | --- | --- |
 | 01 | `base-persistencia-integracao` — concluída | Nenhuma | PostgreSQL, JPA, Flyway e suporte de testes |
 | 02 | `dominio-pedidos` — concluída | 01 | Pedido, itens, cálculos e estados da reserva |
-| 03 | `modelo-relacional-pedidos` — parcial | 01, 02 | Pedido/itens validados; Outbox e processamento pendentes |
-| 04 | `criacao-pedidos` | 02, 03 | API, catálogo e gravação atômica com Outbox |
+| 03 | `modelo-relacional-pedidos` — concluída | 01, 02 | Quatro tabelas e mapeamentos validados |
+| 04 | `criacao-pedidos` — concluída | 02, 03 | API, catálogo e gravação atômica com Outbox |
 | 05 | `publicacao-outbox` | 04 | Publicar comandos de reserva no Kafka |
 | 06 | `resultado-reserva-estoque` | 05 | Consumir resultados com deduplicação e transações |
 | 07 | `consulta-pedidos` | 04, 06 | Expor o estado persistido e validar o fluxo inicial |
@@ -61,7 +65,7 @@ Executar na ordem abaixo e aguardar a conclusão das dependências. Uma aprovaç
 - **Escopo proposto:** migrations de produção, mapeamentos JPA, reidratação de pedidos e testes PostgreSQL das restrições físicas e da versão otimista. Nome e preço históricos permanecem nos itens; moeda pertence ao pedido; subtotal e total continuam derivados.
 - **Decisões para a spec:** UUID de item, geração de timestamps, versão otimista, precisão monetária sem arredondamento SQL silencioso, reidratação, nulabilidade, FK, unicidade de produto por pedido, cascata e ordem dos itens. A chave de deduplicação é composta por consumidor e mensagem; Outbox armazena envelope serializado em texto, com publicação pendente indicada por `published_at` nulo.
 - **Entrega/validação proposta:** migrations e JPA concordantes com o diagrama aprovado, round-trip sem perda de snapshots ou valores, rejeição de violações das restrições e detecção de conflito otimista. Não inclui API, consulta ao catálogo, publicação/consumo Kafka, polling ou deduplicação operacional.
-- **Estado:** [spec](../specs/modelo-relacional-pedidos/spec.md) parcialmente autorizada: `OrderItem` JPA e suporte de pedido/itens implementados e validados. Outbox e processamento continuam pendentes de aprovação e implementação, conforme as [tarefas](../specs/modelo-relacional-pedidos/tasks.md). O item completo ainda não está concluído.
+- **Estado:** [spec](../specs/modelo-relacional-pedidos/spec.md) aprovada e implementada. V1 preserva pedido/itens; V2 acrescenta Outbox e processamento com entidades Lombok e chave composta. As [tarefas](../specs/modelo-relacional-pedidos/tasks.md) registram 28 testes passando, upgrade com dados preservados e cobertura das novas classes. Publicação/consumo continuam nos itens 05/06; revisão independente do restante somente mediante solicitação.
 
 ## 04 — Criação de pedidos com catálogo e Outbox
 
@@ -69,6 +73,7 @@ Executar na ordem abaixo e aguardar a conclusão das dependências. Uma aprovaç
 - **Ordem:** depende de 02 e 03; utiliza os modelos relacionais existentes e fornece as mensagens pendentes consumidas pelo publicador do item 05.
 - **Questões para a spec:** contrato HTTP, erros, produto ausente/inativo, falhas/timeouts do catálogo, repetição da requisição de criação e contrato do comando com Estoque; envelope, identificadores, versão e payload precisam ser acordados.
 - **Entrega/validação proposta:** criação em `AWAITING_STOCK`, preços obtidos no backend e snapshots preservados; testes de API/catálogo e integração comprovando persistência atômica e rollback de pedido, itens e Outbox.
+- **Estado:** [spec](../specs/criacao-pedidos/spec.md) aprovada e implementada: `POST /orders`, cliente HTTP de catálogo e transação única com Outbox. Contratos e configuração em [order-creation.md](order-creation.md); testes e cobertura nas [tarefas](../specs/criacao-pedidos/tasks.md). Validação com HTTP simulado/PostgreSQL Testcontainers, sem Kafka ou serviços reais. Publicação aguarda o ciclo SDD do item 05.
 
 ## 05 — Publicação da Outbox no Kafka
 
@@ -116,4 +121,4 @@ O marco inicial termina aqui, em `AWAITING_PAYMENT` ou `REJECTED`. Chegar a `AWA
 
 ## Estado desta entrega
 
-Os itens 01 e 02 estão implementados e validados. Este roteiro foi atualizado para inserir o modelo relacional do diagrama como item 03 e ajustar as dependências seguintes. Essa atualização documental não executa migrations nem aprova automaticamente a nova persistência.
+Os itens 01, 02, 03 e 04 estão implementados e validados. A criação persiste pedido, itens e comando na Outbox na mesma transação; os testes usam catálogo HTTP simulado e PostgreSQL Testcontainers. O próximo item é 05, publicação da Outbox, que exige seu próprio ciclo SDD e aprovação. Publicação e consumo Kafka ainda não foram implementados.
