@@ -17,8 +17,7 @@ Documentos de Merge Request ficam em `docs/merge_requests/<nome-kebab-case>.md`.
 3. Exigir `tasks.md` com tarefas técnicas relacionadas aos critérios de aceitação, implementação, testes, validação e checklist.
 4. Apresentar resumo e dúvidas ao usuário; aguardar aprovação explícita antes de implementar.
 5. Após aprovação, delegar implementação ao `software_engineer`.
-6. Delegar revisão ao `code_reviewer`. Se houver problemas, retornar ao engenheiro e repetir revisão.
-7. Relatar arquivos alterados, testes efetivamente executados, cobertura verificada, riscos e pendências.
+6. Relatar arquivos alterados, testes efetivamente executados, cobertura verificada, riscos e pendências.
 
 ### Correção de bug
 
@@ -30,9 +29,12 @@ Criar teste de regressão.
 
 ### Refatoração
 
-Delegar ao engenheiro e depois ao revisor, preservando comportamento e contratos existentes.
+Delegar ao engenheiro, preservando comportamento e contratos existentes.
 
 Não alterar requisitos implicitamente.
+
+### Revisao
+Invocar `code_reviewer` apenas mediante solicitação do usuário.
 
 ### Documentação de Merge Request
 

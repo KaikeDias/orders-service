@@ -19,7 +19,7 @@ Todos os diagramas e comportamentos de negócio abaixo são planejados ou propos
 | Evidência | Verificado por leitura | Limite da evidência |
 | --- | --- | --- |
 | [OrdersServiceApplication.java](src/main/java/com/dias/orders_service/OrdersServiceApplication.java) | Bootstrap com `@SpringBootApplication` e `SpringApplication.run` | Não contém fluxo de pedidos |
-| [application.properties](src/main/resources/application.properties) | Somente `spring.application.name=orders-service` | Sem propriedades explícitas de banco, Kafka ou integrações HTTP nesse arquivo |
+| [application.yaml](src/main/resources/application.yaml) | Nome da aplicação, configuração JPA e conexão padrão do datasource | Sem configuração explícita de Kafka ou integrações HTTP nesse arquivo |
 | [pom.xml](pom.xml) | Dependências, Java e plugins descritos na seção 4 | Não foi resolvido ou compilado nesta tarefa |
 | [OrdersServiceApplicationTests.java](src/test/java/com/dias/orders_service/OrdersServiceApplicationTests.java) | Um `contextLoads()` com `@SpringBootTest` e importação de Testcontainers | Teste presente, não executado |
 | [TestcontainersConfiguration.java](src/test/java/com/dias/orders_service/TestcontainersConfiguration.java) | Beans com `@ServiceConnection` para Kafka e PostgreSQL | Containers não iniciados nesta tarefa |
@@ -55,7 +55,7 @@ Pedidos deverá obter preços no backend pelo catálogo, preservar nome e preço
 | Maven Wrapper | Wrapper `3.3.4`, `distributionType=only-script`, distribuição Maven `3.10.0` | Arquivos presentes; execução não verificada |
 | Spring MVC e Validation | `spring-boot-starter-webmvc` e `spring-boot-starter-validation` | Dependências declaradas; API de pedidos ausente |
 | Spring Data JPA | Não há `spring-boot-starter-data-jpa` no POM | Pretendido, ainda não configurado; divergência para o modelo JPA proposto |
-| PostgreSQL e Flyway | Driver PostgreSQL em runtime, `spring-boot-starter-flyway` e `flyway-database-postgresql` | Declarados; sem migrations ou configuração explícita de conexão em `application.properties` |
+| PostgreSQL e Flyway | Driver PostgreSQL em runtime, `spring-boot-starter-flyway` e `flyway-database-postgresql` | Declarados; sem migrations; conexão configurada em `application.yaml` e no perfil `local` |
 | Spring for Apache Kafka | `spring-boot-starter-kafka` | Declarado; contratos e processamento de pedidos ausentes |
 | Actuator | `spring-boot-starter-actuator` | Declarado; endpoints efetivamente disponíveis não verificados |
 | Testcontainers | Suporte Spring Boot, JUnit Jupiter, Kafka e PostgreSQL em escopo test | Configuração de containers presente; não executada |
