@@ -18,7 +18,7 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 
 O perfil `local` usa `jdbc:postgresql://localhost:5432/orders_db` e as credenciais locais configuradas em `application-local.properties`. Sobrescreva a conexão com as variáveis padrão do Spring `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` e `SPRING_DATASOURCE_PASSWORD`. Outros ambientes devem fornecer sua própria conexão; o perfil local não é ativado automaticamente.
 
-Hibernate usa `ddl-auto=validate` e não cria nem altera tabelas. Flyway executa migrations da localização de produção `classpath:db/migration`; esta etapa ainda não contém migrations de produção. Não habilite `flyway clean`, baseline automático ou reparo para contornar divergências.
+Hibernate usa `ddl-auto=validate` e não cria nem altera tabelas. Flyway executa migrations da localização de produção `classpath:db/migration`. O modelo parcial atual cria apenas `orders` e `order_items`; tabelas de Outbox e processamento permanecem pendentes de aprovação. Não habilite `flyway clean`, baseline automático ou reparo para contornar divergências.
 
 ## Validar
 
@@ -26,10 +26,14 @@ Hibernate usa `ddl-auto=validate` e não cria nem altera tabelas. Flyway executa
 ./mvnw.cmd clean verify
 ```
 
-Os testes usam somente containers PostgreSQL com a imagem fixada em `postgres:16.9-alpine`; não conectam a `orders_db` e não iniciam Kafka. Docker precisa estar disponível. A execução produz relatórios JaCoCo em `target/site/jacoco/index.html` (HTML) e `target/site/jacoco/jacoco.xml` (XML). Sem lógica de negócio nesta etapa, esses relatórios medem somente o código de produção existente e não representam cobertura de regras de negócio.
+Os testes usam somente containers PostgreSQL com a imagem fixada em `postgres:16.9-alpine`; não conectam a `orders_db` e não iniciam Kafka. Docker precisa estar disponível. A execução produz relatórios JaCoCo em `target/site/jacoco/index.html` (HTML) e `target/site/jacoco/jacoco.xml` (XML). A cobertura inclui regras de domínio e persistência; APIs, catálogo e fluxos Kafka continuam fora desta etapa.
 
 ## Última validação registrada
 
-Em 27/10/2026, `mvnw.cmd clean verify` passou com Maven 3.10.0 e JDK 25.0.5.0.2. Os três testes passaram: um teste de conexão/JPA/Flyway com PostgreSQL Testcontainers 16.9, um teste de conexão inválida e um teste de migration inválida. A migration de teste foi aplicada uma vez e não está no JAR de produção (`target/orders-service-0.0.1-SNAPSHOT.jar`). Os relatórios JaCoCo foram gerados; a classe bootstrap teve 3 de 8 instruções e 1 de 3 linhas cobertas, sem lógica de negócio para medir.
+Em 27/10/2026, `mvnw.cmd clean verify` passou com Maven 3.10.0 e JDK 25.0.5.0.2: 19 testes, sem falhas, erros ou skips. Os testes de persistência usaram PostgreSQL Testcontainers 16.9 e verificaram a migration real, round-trip do agregado, carregamento direto de item com associação lazy, constraints SQL incluindo nulos obrigatórios e IDs duplicados, timestamps, concorrência otimista, reidratação inválida e ausência de remoção em cascata. As migrations de falha de teste não estão no JAR de produção (`target/orders-service-0.0.1-SNAPSHOT.jar`).
 
-A inicialização com perfil `local` conectou ao PostgreSQL 16.14 em `orders_db` e inicializou JPA. A inspeção somente de leitura após a inicialização encontrou zero tabelas públicas de negócio e zero migrations registradas. Flyway criou sua tabela de histórico. Nenhuma operação de limpeza ou reparo foi executada.
+JaCoCo gerou HTML/XML. A cobertura de linhas foi: `OrderItem` 55/61 (90,2%), `Order` 65/69 (94,2%) e `OrderStatus` 4/4 (100%); branches foram 32/40 (80%) em `OrderItem`, 32/40 (80%) em `Order` e sem branches em `OrderStatus`.
+
+A validação deste modelo usou exclusivamente PostgreSQL Testcontainers; `orders_db` não foi acessado. A migration parcial contém apenas `orders` e `order_items`, além do histórico Flyway. `outbox_messages` e `processed_messages` não foram criadas. Nenhuma operação de limpeza ou reparo foi executada.
+
+Ao carregar `OrderItem` diretamente, a moeda é obtida pela associação lazy ao pedido. Resolva `currency()` enquanto o item permanece associado a um contexto de persistência aberto. Ao recarregar o agregado `Order`, a moeda dos itens é reconstruída durante a validação do agregado.

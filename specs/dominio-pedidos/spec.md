@@ -20,7 +20,7 @@ Definir o modelo de pedido e seus itens, a cópia histórica dos dados de produt
 2. Cada item contém `productId` UUID, nome histórico não nulo e não composto apenas por espaços, preço unitário histórico e quantidade inteira maior que zero. O preço é não nulo e maior ou igual a zero. O identificador de produto não pode ser nulo.
 3. Cada pedido utiliza uma única moeda. Proposta: aceitar código ISO 4217 reconhecido, sem conversão, e rejeitar itens cuja moeda difira da moeda do pedido. A moeda do item é validada na formação do pedido; a representação interna pode evitá-la em duplicidade depois da validação.
 4. Proposta: rejeitar um pedido com o mesmo `productId` em mais de um item. Não somar quantidades nem escolher entre snapshots conflitantes implicitamente.
-5. O domínio recebe nome, preço e moeda como snapshot já obtido pelo chamador. Após criação, alterações em objetos ou coleções fornecidos ao domínio não podem mudar os dados históricos do pedido. A obtenção do snapshot no catálogo e a proibição de receber preço do cliente na API serão tratadas no item 03.
+5. O domínio recebe nome, preço e moeda como snapshot já obtido pelo chamador. Após criação, alterações em objetos ou coleções fornecidos ao domínio não podem mudar os dados históricos do pedido. A obtenção do snapshot no catálogo e a proibição de receber preço do cliente na API serão tratadas na funcionalidade de criação de pedidos.
 
 ### Valores monetários
 
@@ -39,7 +39,7 @@ Definir o modelo de pedido e seus itens, a cópia histórica dos dados de produt
 | `AWAITING_STOCK` | registrar reserva de estoque recusada | `REJECTED` |
 
 11. Qualquer outra aplicação dessas operações, incluindo repetição, falha como operação inválida e mantém o estado, itens e valores inalterados. `AWAITING_PAYMENT` e `REJECTED` são terminais **apenas para as duas operações de reserva deste recorte**; não se define aqui o ciclo de vida posterior.
-12. A validação de estado pertence ao domínio. A deduplicação de mensagens e o tratamento de eventos repetidos ou atrasados na integração serão definidos no item 05; não presumir que uma operação de domínio repetida seja idempotente.
+12. A validação de estado pertence ao domínio. A deduplicação de mensagens e o tratamento de eventos repetidos ou atrasados na integração serão definidos na funcionalidade de resultado de reserva de estoque; não presumir que uma operação de domínio repetida seja idempotente.
 
 ## Requisitos funcionais
 

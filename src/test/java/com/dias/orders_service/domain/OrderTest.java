@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import com.dias.orders_service.domain.entity.Order;
+import com.dias.orders_service.domain.entity.OrderItem;
+import com.dias.orders_service.domain.enums.OrderStatus;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -114,16 +117,16 @@ class OrderTest {
 		BigDecimal acceptedTotal = accepted.total();
 		accepted.recordStockAccepted();
 		assertThat(accepted.status()).isEqualTo(OrderStatus.AWAITING_PAYMENT);
-		assertThat(accepted.items()).isSameAs(acceptedItems);
-		assertThat(accepted.total()).isSameAs(acceptedTotal);
+		assertThat(accepted.items()).isEqualTo(acceptedItems);
+		assertThat(accepted.total()).isEqualTo(acceptedTotal);
 
 		Order rejected = order();
 		List<OrderItem> rejectedItems = rejected.items();
 		BigDecimal rejectedTotal = rejected.total();
 		rejected.recordStockRejected();
 		assertThat(rejected.status()).isEqualTo(OrderStatus.REJECTED);
-		assertThat(rejected.items()).isSameAs(rejectedItems);
-		assertThat(rejected.total()).isSameAs(rejectedTotal);
+		assertThat(rejected.items()).isEqualTo(rejectedItems);
+		assertThat(rejected.total()).isEqualTo(rejectedTotal);
 	}
 
 	@Test
@@ -144,12 +147,12 @@ class OrderTest {
 
 		assertThatThrownBy(order::recordStockAccepted).isInstanceOf(IllegalStateException.class);
 		assertThat(order.status()).isEqualTo(status);
-		assertThat(order.items()).isSameAs(items);
-		assertThat(order.total()).isSameAs(total);
+		assertThat(order.items()).isEqualTo(items);
+		assertThat(order.total()).isEqualTo(total);
 		assertThatThrownBy(order::recordStockRejected).isInstanceOf(IllegalStateException.class);
 		assertThat(order.status()).isEqualTo(status);
-		assertThat(order.items()).isSameAs(items);
-		assertThat(order.total()).isSameAs(total);
+		assertThat(order.items()).isEqualTo(items);
+		assertThat(order.total()).isEqualTo(total);
 	}
 
 	private static OrderItem item(UUID productId, String name, String price, int quantity) {
