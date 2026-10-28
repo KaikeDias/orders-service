@@ -1,5 +1,12 @@
 spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
   datasource:
     url: jdbc:postgresql://127.0.0.1:1/should-not-connect
     username: test
     password: test
+
+catalog:
+  base-url: http://127.0.0.1:1

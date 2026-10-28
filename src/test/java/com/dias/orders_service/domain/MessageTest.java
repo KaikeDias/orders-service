@@ -12,6 +12,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MessageTest {
 
+    @org.junit.jupiter.api.Test
+    void supportsExplicitMessageIdentityWithoutChangingExistingFactory() {
+        java.util.UUID id = java.util.UUID.randomUUID();
+        var message = com.dias.orders_service.domain.entity.OutboxMessage.create(id, "topic", "key", "payload");
+        org.assertj.core.api.Assertions.assertThat(message.id()).isEqualTo(id);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> com.dias.orders_service.domain.entity.OutboxMessage.create(null, "topic", "key", "payload"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
 	@Test
 	void createsOpaqueOutboxWithIndependentIdentityAndNoPublication() {
 		String payload = "texto opaco\nestoque: café ☕";

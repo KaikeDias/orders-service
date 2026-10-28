@@ -42,18 +42,22 @@ public class OutboxMessage {
 	@Column(name = "published_at")
 	private Instant publishedAt;
 
-	private OutboxMessage(String topic, String partitionKey, String payload) {
-		if (topic == null || partitionKey == null || payload == null) {
-			throw new IllegalArgumentException("topic, partitionKey and payload are required");
+	private OutboxMessage(UUID id, String topic, String partitionKey, String payload) {
+		if (id == null || topic == null || partitionKey == null || payload == null) {
+			throw new IllegalArgumentException("id, topic, partitionKey and payload are required");
 		}
-		this.id = UUID.randomUUID();
+		this.id = id;
 		this.topic = topic;
 		this.partitionKey = partitionKey;
 		this.payload = payload;
 	}
 
 	public static OutboxMessage create(String topic, String partitionKey, String payload) {
-		return new OutboxMessage(topic, partitionKey, payload);
+		return create(UUID.randomUUID(), topic, partitionKey, payload);
+	}
+
+	public static OutboxMessage create(UUID id, String topic, String partitionKey, String payload) {
+		return new OutboxMessage(id, topic, partitionKey, payload);
 	}
 
 	@PrePersist
