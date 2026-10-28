@@ -29,18 +29,18 @@ class OrdersServiceApplicationTests {
 	private DataSource dataSource;
 
 	@Test
-	void connectsToPostgresAndRunsOnlyTheTestMigrationOnce() throws SQLException {
+	void connectsToPostgresAndRunsProductionMigrationsOnce() throws SQLException {
 		assertThat(jdbcTemplate.queryForObject("SELECT 1", Integer.class)).isEqualTo(1);
 		try (var connection = dataSource.getConnection()) {
 			assertThat(connection.getMetaData().getURL()).doesNotContain("should-not-connect", "orders_db");
 		}
 		assertThat(entityManagerFactory).isNotNull();
-		assertThat(flyway.info().applied()).hasSize(1);
+		assertThat(flyway.info().applied()).hasSize(2);
 		assertThat(flyway.migrate().migrationsExecuted).isZero();
 		assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('orders', 'order_items')", Integer.class))
 				.isEqualTo(2);
 		assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('outbox_messages', 'processed_messages')", Integer.class))
-				.isZero();
+				.isEqualTo(2);
 	}
 
 }
